@@ -34,18 +34,34 @@ function string:octets(count)
     return self:sub(1,count*2), self:sub(count*2+1)
 end
 
+function string:decode7bitPayload(length)
+    local data = ""
+    local prevoctet = 0
+    local octet
+    local state = 1
+    while self ~= "" do
+        octet, self = self:decodeOctet()
+        print(string.char(bit.lshift(prevoctet,7-state)+bit.rshift(octet,state)))
+        prevoctet = bit.band(octet, bit.rshift(0xFF,state))
+        state = state+1>7 and state+1 or 0
+    end
+    return data
+end
+
 function string:decodeTXmsg(response)
     response.msgReference, self = self:decodeOctet()
     response.sender.len,   self = self:decodeOctet()
     response.sender.type,  self = self:decodeOctet()
     if response.sender.len > 0 then
-        response.sender.num, self = self:decodeDecOctets(response.sender.len/2+0.5)
+        response.sender.num, self = self:decodeDecOctets(math.ceil(response.sender.len/2))
     end
     response.PID, self         = self:decodeOctet()
     response.DCS, self         = self:decodeOctet()
     response.validPeriod, self = self:decodeOctet()
     response.msg.length, self  = self:decodeOctet()
+    response.msg.content       = self:decode7bitPayload()
 
+    return response
 end
 
 function string:decodePDU()
@@ -57,7 +73,7 @@ function string:decodePDU()
     end
     response.type, self = self:decodeOctet()
     if bit.band(response.type,0x03) == 1 then
-        print("TX MSG")
+        return self:decodeTXmsg(response)
     elseif bit.band(response.type,0x03) == 0 then
         print("RX MSG")
     else
