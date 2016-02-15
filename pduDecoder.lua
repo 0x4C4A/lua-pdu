@@ -8,7 +8,6 @@ local decodeTable7bit = {[0]="@",[1]="£",[2]="$",[3]="¥",[4]="è",[5]="é",[6]
 
 function string:decodeOctet()
     if self:len() < 2 then error("Too short, can't get octet!") end
-    print(tonumber("0x"..self:sub(1,2)))
     return tonumber("0x"..self:sub(1,2)), self:sub(3)
 end
 
@@ -35,17 +34,32 @@ function string:octets(count)
 end
 
 function string:decode7bitPayload(length)
-    local data = ""
+    local data = {}
     local prevoctet = 0
+    local state = 0
     local octet
-    local state = 1
-    while self ~= "" do
+    local val
+    while self ~= "" and length ~= 0 do
         octet, self = self:decodeOctet()
-        print(string.char(bit.lshift(prevoctet,7-state)+bit.rshift(octet,state)))
-        prevoctet = bit.band(octet, bit.rshift(0xFF,state))
-        state = state+1>7 and state+1 or 0
+        val = bit.band(bit.lshift(octet,state),0x7F) + prevoctet
+        print(val, state, bit.tohex(octet))
+        prevoctet = bit.band(bit.rshift(octet, 7-state),0x7F)
+        data[#data+1] = decodeTable7bit[val]
+        if state == 7 then
+            print(prevoctet)
+            data[#data+1] = decodeTable7bit[prevoctet]
+            prevoctet = 0
+            state = 0
+            length = length - 2
+        else
+            length = length - 1
+            state = state + 1
+        end
+        print("<"..table.concat(data)..">")
+        --print(decodeTable7bit[val])
     end
-    return data
+    print("datalen: "..#data)
+    return table.concat(data)
 end
 
 function string:decodeTXmsg(response)
@@ -59,7 +73,7 @@ function string:decodeTXmsg(response)
     response.DCS, self         = self:decodeOctet()
     response.validPeriod, self = self:decodeOctet()
     response.msg.length, self  = self:decodeOctet()
-    response.msg.content       = self:decode7bitPayload()
+    response.msg.content       = self:decode7bitPayload(response.msg.length)
 
     return response
 end
