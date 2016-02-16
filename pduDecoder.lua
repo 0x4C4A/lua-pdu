@@ -75,8 +75,11 @@ function string:decode7bitPayload(length)
             state = state + 1
         end
     end
-    if length ~=0 or self:len() ~= 0 then print("Content length unexpected!") end
-    return table.concat(data)
+    if     length     ~= 0 then
+        print("Content shorter than expected!")
+    elseif self:len() ~= 0 then
+        print("Content longer than expected!<"..self..">")
+    end    return table.concat(data)
 end
 
 function string:decode8bitPayload(length)
@@ -87,7 +90,11 @@ function string:decode8bitPayload(length)
         data[#data+1] = string.char(octet)
         length = length - 1
     end
-    if length ~=0 or self:len() ~= 0 then print("Content length unexpected!") end
+    if     length     ~= 0 then
+        print("Content shorter than expected!")
+    elseif self:len() ~= 0 then
+        print("Content longer than expected!<"..self..">")
+    end
     return table.concat(data)
 end
 
@@ -112,8 +119,10 @@ function string:decode16bitPayload(length)
         end
         length = length - 2
     end
-    if length ~=0 or self:len() ~= 0 then
-        print("Content length unexpected!")
+    if     length     ~= 0 then
+        print("Content shorter than expected!")
+    elseif self:len() ~= 0 then
+        print("Content longer than expected!<"..self..">")
     end
     return table.concat(data)
 end
@@ -214,6 +223,27 @@ function encode16bitPayload(content)
     return response
 end
 
+function encode7bitPayload(content)
+    local response = {}
+    local state = 0
+    local carryover = 0
+
+    while content:len() ~= 0 or carryover ~= 0 do
+        local charval = encodeTable7bit[content:sub(1,1)]
+        content = content:sub(2)
+        if charval == nil then charval = encodeTable7bit["?"] end
+        local val = bit.lshift(charval, state) + carryover
+        if state~= 0 or content:len() == 0 then
+            response[#response+1] = octet(bit.band(val, 0xFF))
+            carryover = bit.rshift(val, 8)
+        else
+            carryover = val
+        end
+        if state == 0 then state = 7 else state = state - 1 end
+    end
+    return response
+end
+
 function encodePayload(content, alphabetOverride)
     if alphabetOverride == nil then
         alphabetOverride = 16
@@ -230,6 +260,8 @@ function encodePayload(content, alphabetOverride)
         end
     elseif alphabetOverride == 16 then
         response = encode16bitPayload(content)
+    elseif alphabetOverride == 7 then
+        response = encode7bitPayload(content)
     else
         error("Unimplemented payload encoding alphabet!")
     end
@@ -290,7 +322,7 @@ function encodePDUsimple(recipientNumber, content)
 end
 
 local pduMSG = "0011000A9160214365870008AA1C00640061007400610066006100740061007800610073006400610073"
-x = "123"
-print(encodePayload(x,8))
-print(encodePayload(x,8):decode8bitPayload(3))
-print(json.encode(pduMSG:decodePDU()))
+x = "12345678ABSAD9"
+print(encodePayload(x,7))
+print(encodePayload(x,7):decode7bitPayload(x:len()))
+--print(json.encode(pduMSG:decodePDU()))
