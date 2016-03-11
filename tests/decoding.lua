@@ -21,12 +21,3 @@ local expected = {
     }
 }
 deepCompare(expected, decoded)
-
---print(json.encode(pduMSG:decodePDU()))
---print(encodePayload(x,7))
---print(encodePayload(x,7):decode7bitPayload(x:len()))
-
---local sms = pduTranscoder.newTxSmsObject()
---print(json.encode(sms))
---print(json.encode())
---print(sms:encode())

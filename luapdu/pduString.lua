@@ -92,9 +92,9 @@ function pduString:decode8bitPayload(content, length)
         data[#data+1] = string.char(octet)
         length = length - 1
     end
-    if     length     ~= 0 then
+    if     length        > 0 then
         print("Content shorter than expected!")
-    elseif content:len() ~= 0 then
+    elseif content:len() > 0 then
         print("Content longer than expected!<"..content..">")
     end
     return table.concat(data)

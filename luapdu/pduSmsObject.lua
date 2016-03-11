@@ -9,6 +9,7 @@ function pduSmsObject.new(content)
     return self
 end
 
+--! Create new TX sms object with default values
 function pduSmsObject.newTx()
     local content = {
             msgReference=0,
@@ -25,6 +26,7 @@ function pduSmsObject.newTx()
     return pduSmsObject.new(content)
 end
 
+--! Create new RX sms object with default values
 function pduSmsObject.newRx()
     local content = {
             sender={
@@ -46,25 +48,26 @@ function pduSmsObject:encode16bitPayload()
     local content = self.msg.content
     while content:len() ~= 0 do
         -- http://lua-users.org/wiki/LuaUnicode
+        -- X - octet1, Y - octet2
         local byte = content:byte(1)
-        if     byte <= 0x80 then
+        if     byte <= 0x80 then    -- 7bit
             response[#response+1] = "00"
-            response[#response+1] = pduString:octet(byte)
+            response[#response+1] = pduString:octet(byte)       -- 0b0XXXXXXX
             content = content:sub(2)
-        elseif byte <= 0x90 then
+        elseif byte <= 0x90 then    -- 11bit
             local byte2 = content:byte(2)
             content = content:sub(3)
-            local val = bit.lshift(bit.band(byte,0x3F),6) +
-                        bit.band(byte2,0x3F)
+            local val = bit.lshift(bit.band(byte,0x3F),6) +     -- 0b110XXXYY
+                        bit.band(byte2,0x3F)                    -- 0b10YYYYYY
             response[#response+1] = pduString:octet(bit.rshift(val,8))
             response[#response+1] = pduString:octet(bit.band(val,0xFF))
-        elseif byte <= 0xF0 then
+        elseif byte <= 0xF0 then    -- 16bit
             local byte2 = content:byte(2)
             local byte3 = content:byte(3)
             content = content:sub(4)
-            local val = bit.lshift(bit.band(byte,  0x0F),12) +
-                        bit.lshift(bit.band(byte2, 0x3F),6)  +
-                                   bit.band(byte3, 0x3F)
+            local val = bit.lshift(bit.band(byte,  0x0F),12) +  -- 0b1110XXXX
+                        bit.lshift(bit.band(byte2, 0x3F),6)  +  -- 0b10XXXXYY
+                                   bit.band(byte3, 0x3F)        -- 0b10YYYYYY
             response[#response+1] = pduString:octet(bit.rshift(val,8))
             response[#response+1] = pduString:octet(bit.band(val,0xFF))
         else
@@ -102,7 +105,7 @@ function pduSmsObject:encode7bitPayload()
 end
 
 function pduSmsObject:dcsEncodingBits()
-    if      self.msg.content:match("[\224-\240]") then return 8
+    if      self.msg.content:match("[\225-\240]") then return 8
     elseif  self.msg.content:match("[\128-\224]") then return 4
     else                                               return 0 end
 end
@@ -161,7 +164,7 @@ function pduSmsObject:encode()
         self.sender.len  = rawSenderNumber:len()
         response[#response+1] = pduString:octet(self.sender.len)
         response[#response+1] = pduString:octet(self.sender.type)
-        response[#response+1] = pduString:decOctets(self.sender.num)
+        response[#response+1] = pduString:decOctets(rawSenderNumber)
         -- Protocol
         response[#response+1] = pduString:octet(0x00)
         -- Data Coding Scheme https://en.wikipedia.org/wiki/Data_Coding_Scheme
@@ -184,7 +187,7 @@ function pduSmsObject:encode()
         self.recipient.len    = rawRecipientNumber:len()
         response[#response+1] = pduString:octet(self.recipient.len)
         response[#response+1] = pduString:octet(self.recipient.type)
-        response[#response+1] = pduString:decOctets(self.recipient.num)
+        response[#response+1] = pduString:decOctets(rawRecipientNumber)
         -- Protocol
         response[#response+1] = pduString:octet(0x00)
         -- Data Coding Scheme https://en.wikipedia.org/wiki/Data_Coding_Scheme

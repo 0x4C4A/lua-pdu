@@ -7,7 +7,8 @@ local pduSmsObject = require('luapdu.pduSmsObject')
 -- http://www.smartposition.nl/resources/sms_pdu.html
 -- https://en.wikipedia.org/wiki/User_Data_Header
 -- https://en.wikipedia.org/wiki/Concatenated_SMS
-
+-- http://mobiletidings.com/2009/02/18/combining-sms-messages/
+-- https://github.com/tladesignz/jsPduDecoder
 function decodePduSms(pduSmsString)
     local pduStr = pduString.new(pduSmsString)
     return pduStr:decodePDU()
