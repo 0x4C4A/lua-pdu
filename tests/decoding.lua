@@ -1,4 +1,3 @@
-require("json")
 require("luapdu")
 require("luapdu.tests.utils")
 
