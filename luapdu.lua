@@ -1,5 +1,3 @@
-require("json") -- luarocks install luajson
-
 local pduString    = require('luapdu.pduString')
 local pduSmsObject = require('luapdu.pduSmsObject')
 -- Valuable addresses
