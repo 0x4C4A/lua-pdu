@@ -109,12 +109,12 @@ function pduString:decode16bitPayload(content, length)
         val = bit.lshift(octet1, 8) + octet2
         -- http://lua-users.org/wiki/LuaUnicode
         -- X - octet1, Y - octet2
-        if val < 0x7F then       -- 8bit
+        if val < 0x80 then       -- 7bit
             data[#data+1] = string.char(val)    -- 0b0XXXXXXX
-        elseif val < 0x7FF then  -- 11bit
+        elseif val < 0x800 then  -- 11bit
             data[#data+1] = string.char(0xC0 + bit.rshift(val,8))   -- 0b110XXXYY
             data[#data+1] = string.char(0x80 + bit.band(val, 0x3F)) -- 0b10YYYYYY
-        elseif val < 0xFFFF then -- 16bit
+        elseif val < 0x10000 then -- 16bit
             data[#data+1] = string.char(0xE0 + bit.band(bit.rshift(val,12), 0x1F))  -- 0b1110XXXX
             data[#data+1] = string.char(0x80 + bit.band(bit.rshift(val,6), 0x3F))   -- 0b10XXXXYY
             data[#data+1] = string.char(0x80 + bit.band(val, 0x3F))                 -- 0b10YYYYYY
@@ -144,6 +144,9 @@ function pduString:decodeTXmsg(content, response)
     end
     response.protocol,    content = self:decodeOctet(content)
     response.decoding,    content = self:decodeOctet(content)
+    if bit.band(response.type, 0x18) ~= 0 then
+        response.validity,    content = self:decodeOctet(content)
+    end
     response.msg.len,     content = self:decodeOctet(content)
     response.msg.content          = self:decodePayload(content,
                                                        response.decoding,
