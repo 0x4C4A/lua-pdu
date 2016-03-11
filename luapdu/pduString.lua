@@ -29,13 +29,14 @@ function pduString:decodeDecOctets(str, count)
 end
 
 function pduString:octet(val)
-    if val > 255  then error("Can't convert to octet - value too large!") end
-    if val == nil then val = 0 end
+    if val == nil then val = 0; error("NIL!")
+    elseif val > 255  then error("Can't convert to octet - value too large!") end
     return bit.tohex(val,2):upper()
 end
 
 function pduString:decOctets(val)
     local response = {}
+    val = val or ""
     if val:len() % 2 ~= 0 then val = val .. "F" end
     while val:len() ~= 0 do
         response[#response+1] = val:sub(2,2)
@@ -55,7 +56,6 @@ end
 
 function pduString:decode7bitPayload(content, length)
     local decodeTable7bit = {[0]="@",[1]="£",[2]="$",[3]="¥",[4]="è",[5]="é",[6]="ù",[7]="ì",[8]="ò",[9]="Ç",[10]=" ",[11]="Ø",[12]="ø",[13]=" ",[14]="Å",[15]="å",[16]="Δ",[17]="_",[18]="Φ",[19]="Γ",[20]="Λ",[21]="Ω",[22]="Π",[23]="Ψ",[24]="Σ",[25]="Θ",[26]="Ξ",[27]="€",[28]="Æ",[29]="æ",[30]="ß",[31]="É",[32]=" ",[33]="!",[34]="\"",[35]="#",[36]="¤",[37]="%",[38]="&",[39]="'",[40]="(",[41]=")",[42]="*",[43]="+",[44]=",",[45]="-",[46]=".",[47]="/",[48]="0",[49]="1",[50]="2",[51]="3",[52]="4",[53]="5",[54]="6",[55]="7",[56]="8",[57]="9",[58]=":",[59]=";",[60]="<",[61]="=",[62]=">",[63]="?",[64]="¡",[65]="A",[66]="B",[67]="C",[68]="D",[69]="E",[70]="F",[71]="G",[72]="H",[73]="I",[74]="J",[75]="K",[76]="L",[77]="M",[78]="N",[79]="O",[80]="P",[81]="Q",[82]="R",[83]="S",[84]="T",[85]="U",[86]="V",[87]="W",[88]="X",[89]="Y",[90]="Z",[91]="Ä",[92]="Ö",[93]="Ñ",[94]="Ü",[95]="§",[96]="¿",[97]="a",[98]="b",[99]="c",[100]="d",[101]="e",[102]="f",[103]="g",[104]="h",[105]="i",[106]="j",[107]="k",[108]="l",[109]="m",[110]="n",[111]="o",[112]="p",[113]="q",[114]="r",[115]="s",[116]="t",[117]="u",[118]="v",[119]="w",[120]="x",[121]="y",[122]="z",[123]="ä",[124]="ö",[125]="ñ",[126]="ü",[127]="à"}
-    local encodeTable7bit = {["@"]=0,["£"]=1,["$"]=2,["¥"]=3,["è"]=4,["é"]=5,["ù"]=6,["ì"]=7,["ò"]=8,["Ç"]=9,[" "]=10,["Ø"]=11,["ø"]=12,[" "]=13,["Å"]=14,["å"]=15,["Δ"]=16,["_"]=17,["Φ"]=18,["Γ"]=19,["Λ"]=20,["Ω"]=21,["Π"]=22,["Ψ"]=23,["Σ"]=24,["Θ"]=25,["Ξ"]=26,["€"]=27,["Æ"]=28,["æ"]=29,["ß"]=30,["É"]=31,[" "]=32,["!"]=33,["\""]=34,["#"]=35,["¤"]=36,["%"]=37,["&"]=38,["'"]=39,["("]=40,[")"]=41,["*"]=42,["+"]=43,[","]=44,["-"]=45,["."]=46,["/"]=47,["0"]=48,["1"]=49,["2"]=50,["3"]=51,["4"]=52,["5"]=53,["6"]=54,["7"]=55,["8"]=56,["9"]=57,[":"]=58,[";"]=59,["<"]=60,["="]=61,[">"]=62,["?"]=63,["¡"]=64,["A"]=65,["B"]=66,["C"]=67,["D"]=68,["E"]=69,["F"]=70,["G"]=71,["H"]=72,["I"]=73,["J"]=74,["K"]=75,["L"]=76,["M"]=77,["N"]=78,["O"]=79,["P"]=80,["Q"]=81,["R"]=82,["S"]=83,["T"]=84,["U"]=85,["V"]=86,["W"]=87,["X"]=88,["Y"]=89,["Z"]=90,["Ä"]=91,["Ö"]=92,["Ñ"]=93,["Ü"]=94,["§"]=95,["¿"]=96,["a"]=97,["b"]=98,["c"]=99,["d"]=100,["e"]=101,["f"]=102,["g"]=103,["h"]=104,["i"]=105,["j"]=106,["k"]=107,["l"]=108,["m"]=109,["n"]=110,["o"]=111,["p"]=112,["q"]=113,["r"]=114,["s"]=115,["t"]=116,["u"]=117,["v"]=118,["w"]=119,["x"]=120,["y"]=121,["z"]=122,["ä"]=123,["ö"]=124,["ñ"]=125,["ü"]=126,["à"]=127}
 
     local data = {}
     local prevoctet = 0
@@ -103,7 +103,7 @@ end
 function pduString:decode16bitPayload(content, length)
     local data = {}
     local octet1, octet2
-    while self ~= "" and length ~=0 do
+    while self ~= "" and length ~= 0 do
         octet1, content = self:decodeOctet(content)
         octet2, content = self:decodeOctet(content)
         val = bit.lshift(octet1, 8) + octet2
@@ -121,8 +121,8 @@ function pduString:decode16bitPayload(content, length)
         end
         length = length - 2
     end
-    if     length     ~= 0 then
-        print("Content shorter than expected!")
+    if     length        ~= 0 then
+        print("Content shorter than expected!<"..length..">")
     elseif content:len() ~= 0 then
         print("Content longer than expected!<"..content..">")
     end
@@ -144,11 +144,10 @@ function pduString:decodeTXmsg(content, response)
     end
     response.protocol,    content = self:decodeOctet(content)
     response.decoding,    content = self:decodeOctet(content)
-    response.validPeriod, content = self:decodeOctet(content)
-    response.msg.length,  content = self:decodeOctet(content)
+    response.msg.len,     content = self:decodeOctet(content)
     response.msg.content          = self:decodePayload(content,
                                                        response.decoding,
-                                                       response.msg.length)
+                                                       response.msg.len)
 
     return response
 end
@@ -167,10 +166,10 @@ function pduString:decodeRXmsg(content, response)
     response.protocol,   content = self:decodeOctet(content)
     response.decoding,   content = self:decodeOctet(content)
     response.timestamp,  content = self:decodeDecOctets(content, 7)
-    response.msg.length, content = self:decodeOctet(content)
-
-    response.msg.content      = self:decodePayload(content, response.decoding,
-                                                   response.msg.length)
+    response.msg.len,    content = self:decodeOctet(content)
+    response.msg.content         = self:decodePayload(content,
+                                                      response.decoding,
+                                                      response.msg.len)
 
     return response
 end

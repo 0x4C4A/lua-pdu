@@ -8,11 +8,6 @@ local pduSmsObject = require('luapdu.pduSmsObject')
 -- https://en.wikipedia.org/wiki/User_Data_Header
 -- https://en.wikipedia.org/wiki/Concatenated_SMS
 
-function newTxSmsObject()
-    local pduSmsObj = pduSmsObject.newTx()
-    return pduSmsObj
-end
-
 function decodePduSms(pduSmsString)
     local pduStr = pduString.new(pduSmsString)
     return pduStr:decodePDU()
@@ -27,7 +22,8 @@ local luapdu = {
     _DESCRIPTION = "LuaPDU : SMS PDU encoder/decoder",
     _COPYRIGHT = "Copyright (c) 2016 Linards Jukmanis <Linards.Jukmanis@gmail.com>",
     decode = decodePduSms,
-    new = newTxSmsObject,
+    newTx = pduSmsObject.newTx,
+    newRx = pduSmsObject.newRx,
 }
 
 _G.luapdu = luapdu
