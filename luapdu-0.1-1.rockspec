@@ -21,8 +21,8 @@ dependencies = {
 build = {
   type = "builtin",
   modules = {
-    ["luapdu"] = "luapdu.lua",
-    ["luapdu.string"] = "luapdu/string.lua",
-    ["luapdu.smsobject"] = "luapdu/smsobject.lua"
+    ["luapdu"] = "lua/luapdu.lua",
+    ["luapdu.string"] = "lua/luapdu/string.lua",
+    ["luapdu.smsobject"] = "lua/luapdu/smsobject.lua"
   }
 }

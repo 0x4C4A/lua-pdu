@@ -10,24 +10,27 @@ function pduSmsObject.new(content)
 end
 
 --! Create new TX sms object with default values
-function pduSmsObject.newTx()
+function pduSmsObject.newTx(recipientNum, content)
+    if recipientNum and not recipientNum:match("^\+?%d+$") then
+        error("Invalid recipient number! <"..recipientNum..">")
+    end
     local content = {
             msgReference=0,
             recipient={
-                num  = ""
+                num  = recipientNum or ""
             },
             protocol = 0,
             decoding = 0,
             --validPeriod = 0x10+11, -- 5 + 5*11 = 60 minutes (https://en.wikipedia.org/wiki/GSM_03.40)
             msg={
-                content = ""
+                content = content or ""
             }
         }
     return pduSmsObject.new(content)
 end
 
 --! Create new RX sms object with default values
-function pduSmsObject.newRx()
+function pduSmsObject.newRx(content)
     local content = {
             sender={
                 num  = ""
@@ -36,7 +39,7 @@ function pduSmsObject.newRx()
             decoding = 0,
             timestamp = ("00"):rep(7),
             msg={
-                content = ""
+                content = content or ""
             }
         }
     return pduSmsObject.new(content)
@@ -50,18 +53,18 @@ function pduSmsObject:encode16bitPayload()
         -- http://lua-users.org/wiki/LuaUnicode
         -- X - octet1, Y - octet2
         local byte = content:byte(1)
-        if     byte <= 0x80 then    -- 7bit
+        if     byte <= 0x7F then    -- 7bit
             response[#response+1] = "00"
             response[#response+1] = pduString:octet(byte)       -- 0b0XXXXXXX
             content = content:sub(2)
-        elseif byte <= 0x90 then    -- 11bit
+        elseif byte <= 0xDF then    -- 11bit
             local byte2 = content:byte(2)
             content = content:sub(3)
-            local val = bit.lshift(bit.band(byte,0x3F),6) +     -- 0b110XXXYY
-                        bit.band(byte2,0x3F)                    -- 0b10YYYYYY
+            local val = bit.lshift(bit.band(byte, 0x1F),6) +    -- 0b110XXXYY
+                                   bit.band(byte2,0x3F)         -- 0b10YYYYYY
             response[#response+1] = pduString:octet(bit.rshift(val,8))
             response[#response+1] = pduString:octet(bit.band(val,0xFF))
-        elseif byte <= 0xF0 then    -- 16bit
+        elseif byte <= 0xEF then    -- 16bit
             local byte2 = content:byte(2)
             local byte3 = content:byte(3)
             content = content:sub(4)
@@ -95,19 +98,19 @@ function pduSmsObject:encode7bitPayload()
         if state~= 0 or content:len() == 0 then
             response[#response+1] = pduString:octet(bit.band(val, 0xFF))
             carryover = bit.rshift(val, 8)
-            length = length + 1
         else
             carryover = val
         end
+        length = length + 1
         if state == 0 then state = 7 else state = state - 1 end
     end
     return response, length
 end
 
 function pduSmsObject:dcsEncodingBits()
-    if      self.msg.content:match("[\225-\240]") then return 8
-    elseif  self.msg.content:match("[\128-\224]") then return 4
-    else                                               return 0 end
+    if     self.msg.content:match("[\196-\240]") then return 8
+    elseif self.msg.content:match("[\128-\196]") then return 4
+    else                                              return 0 end
 end
 
 function pduSmsObject:encodePayload(alphabetOverride)
