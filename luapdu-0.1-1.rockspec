@@ -1,4 +1,4 @@
-package = "Lua-PDU"
+package = "LuaPDU"
 version = "0.1-1"
 source = {
   url = "https://github.com/0x4c4a/lua-pdu.git",
@@ -16,12 +16,7 @@ description = {
 }
 dependencies = {
   "lua ~> 5.1",
-  "json4lua",
   "luabitop"
-}
-build = {
-  copy_directories = { "luapdu" }
-  -- We'll start here.
 }
 build = {
   type = "builtin",
