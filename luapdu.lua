@@ -1,5 +1,5 @@
-local pduString    = require('luapdu.pduString')
-local pduSmsObject = require('luapdu.pduSmsObject')
+local pduString    = require('luapdu.string')
+local pduSmsObject = require('luapdu.smsobject')
 -- Valuable addresses
 -- http://www.sendsms.cn/download/SMS_PDU-mode.PDF
 -- http://www.smartposition.nl/resources/sms_pdu.html
