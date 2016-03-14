@@ -10,24 +10,27 @@ function pduSmsObject.new(content)
 end
 
 --! Create new TX sms object with default values
-function pduSmsObject.newTx()
+function pduSmsObject.newTx(recipientNum, content)
+    if recipientNum and not recipientNum:match("^\+?%d+$") then
+        error("Invalid recipient number! <"..recipientNum..">")
+    end
     local content = {
             msgReference=0,
             recipient={
-                num  = ""
+                num  = recipientNum or ""
             },
             protocol = 0,
             decoding = 0,
             --validPeriod = 0x10+11, -- 5 + 5*11 = 60 minutes (https://en.wikipedia.org/wiki/GSM_03.40)
             msg={
-                content = ""
+                content = content or ""
             }
         }
     return pduSmsObject.new(content)
 end
 
 --! Create new RX sms object with default values
-function pduSmsObject.newRx()
+function pduSmsObject.newRx(content)
     local content = {
             sender={
                 num  = ""
@@ -36,7 +39,7 @@ function pduSmsObject.newRx()
             decoding = 0,
             timestamp = ("00"):rep(7),
             msg={
-                content = ""
+                content = content or ""
             }
         }
     return pduSmsObject.new(content)
