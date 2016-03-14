@@ -5,7 +5,7 @@ source = {
   tag = "v0.1-1"
 }
 description = {
-  summary = "An example for the LuaRocks tutorial.",
+  summary = "PDU SMS encoder/decoder.",
   detailed = [[
     This is a module for decoding and encoding
     PDU SMS which is used for GSM communication.
