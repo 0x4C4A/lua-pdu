@@ -1,5 +1,5 @@
-local pduString    = require('luapdu.pduString')
-local pduSmsObject = require('luapdu.pduSmsObject')
+local pduString    = require('luapdu.string')
+local pduSmsObject = require('luapdu.smsobject')
 -- Valuable addresses
 -- http://www.sendsms.cn/download/SMS_PDU-mode.PDF
 -- http://www.smartposition.nl/resources/sms_pdu.html
@@ -19,7 +19,7 @@ local _ENV = nil
 local luapdu = {
     _VERSION = "0.1",
     _DESCRIPTION = "LuaPDU : SMS PDU encoder/decoder",
-    _COPYRIGHT = "Copyright (c) 2016 Linards Jukmanis <Linards.Jukmanis@gmail.com>",
+    _COPYRIGHT = "Copyright (c) 2016 Linards Jukmanis <Linards.Jukmanis@0x4c4a.com>",
     decode = decodePduSms,
     newTx = pduSmsObject.newTx,
     newRx = pduSmsObject.newRx,

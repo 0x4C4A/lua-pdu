@@ -1,4 +1,4 @@
-pduString = require("luapdu.pduString")
+pduString = require("luapdu.string")
 
 local pduSmsObject = {}
 pduSmsObject.__index = pduSmsObject
