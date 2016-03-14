@@ -95,10 +95,10 @@ function pduSmsObject:encode7bitPayload()
         if state~= 0 or content:len() == 0 then
             response[#response+1] = pduString:octet(bit.band(val, 0xFF))
             carryover = bit.rshift(val, 8)
-            length = length + 1
         else
             carryover = val
         end
+        length = length + 1
         if state == 0 then state = 7 else state = state - 1 end
     end
     return response, length
