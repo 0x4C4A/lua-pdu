@@ -91,7 +91,9 @@ function pduSmsObject:encode7bitPayload()
     local content = self.msg.content
 
     while content:len() ~= 0 or carryover ~= 0 do
-        local charval = encodeTable7bit[content:sub(1,1)]
+        local char = content:sub(1,1)
+        if content:len() ~= 0 then length = length + 1 end
+        local charval = encodeTable7bit[char]
         content = content:sub(2)
         if charval == nil then charval = 0 end
         local val = bit.lshift(charval, state) + carryover
@@ -101,7 +103,6 @@ function pduSmsObject:encode7bitPayload()
         else
             carryover = val
         end
-        length = length + 1
         if state == 0 then state = 7 else state = state - 1 end
     end
     return response, length
@@ -109,7 +110,7 @@ end
 
 function pduSmsObject:dcsEncodingBits()
     if     self.msg.content:match("[\196-\240]") then return 8
-    elseif self.msg.content:match("[\128-\196]") then return 4
+    elseif self.msg.content:match("[\128-\195]") then return 4
     else                                              return 0 end
 end
 
