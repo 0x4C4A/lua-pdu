@@ -185,7 +185,7 @@ function pduSmsObject:contentProcessing()
     if self.msg.multipart then
         maxChars = math.floor(134*8/charWidth)  -- 6 octets lost on multipart header
         self.type = bit.bor(0x40,self.type)     -- Set UDH-Indicator bit
-        self.msg.partCount = contentLen/maxChars
+        self.msg.partCount = math.ceil(contentLen/maxChars)
         if self.msg.partCount > 255 then
             error("Message content too long!")
             return
