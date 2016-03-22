@@ -46,12 +46,12 @@ function pduString:decOctets(val)
     return table.concat(response)
 end
 
-function pduString:decodePayload(content, decoding, length)
-    decodingBits = bit.band(decoding, 12)
-    if     decodingBits == 0  then return self:decode7bitPayload(content, length)
-    elseif decodingBits == 4  then return self:decode8bitPayload(content, length)
-    elseif decodingBits == 8  then return self:decode16bitPayload(content,length)
-    elseif decodingBits == 12 then error("Invalid alphabet size!") end
+function pduString:decodePayload(content, dcs, length)
+    dcsBits = bit.band(dcs, 12)
+    if     dcsBits == 0  then return self:decode7bitPayload(content, length)
+    elseif dcsBits == 4  then return self:decode8bitPayload(content, length)
+    elseif dcsBits == 8  then return self:decode16bitPayload(content,length)
+    elseif dcsBits == 12 then error("Invalid alphabet size!") end
 end
 
 function pduString:decode7bitPayload(content, length)
@@ -143,13 +143,13 @@ function pduString:decodeTXmsg(content, response)
         end
     end
     response.protocol,    content = self:decodeOctet(content)
-    response.decoding,    content = self:decodeOctet(content)
+    response.dcs,    content = self:decodeOctet(content)
     if bit.band(response.type, 0x18) ~= 0 then
         response.validity,    content = self:decodeOctet(content)
     end
     response.msg.len,     content = self:decodeOctet(content)
     response.msg.content          = self:decodePayload(content,
-                                                       response.decoding,
+                                                       response.dcs,
                                                        response.msg.len)
 
     return response
@@ -167,11 +167,11 @@ function pduString:decodeRXmsg(content, response)
         end
     end
     response.protocol,   content = self:decodeOctet(content)
-    response.decoding,   content = self:decodeOctet(content)
+    response.dcs,        content = self:decodeOctet(content)
     response.timestamp,  content = self:decodeDecOctets(content, 7)
     response.msg.len,    content = self:decodeOctet(content)
     response.msg.content         = self:decodePayload(content,
-                                                      response.decoding,
+                                                      response.dcs,
                                                       response.msg.len)
 
     return response
@@ -179,7 +179,7 @@ end
 
 function pduString:decodePDU()
     local content = self.str
-    local response = {smsc={}, msg = {}}
+    local response = {smsc={}, msg = { multipart = false}}
     response.smsc.len, content = self:decodeOctet(content)
     if response.smsc.len > 0 then
         local smscNumLen = response.smsc.len - 1
