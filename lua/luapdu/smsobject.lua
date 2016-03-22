@@ -304,7 +304,6 @@ function pduSmsObject:encode()
         error("No valid content!")
     end
     local pduParts = {}
-    print(json.encode(response))
     for i,sms in ipairs(response) do
        pduParts[i] = table.concat(sms)
     end

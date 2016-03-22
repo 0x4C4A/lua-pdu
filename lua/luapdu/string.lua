@@ -77,9 +77,9 @@ function pduString:decode7bitPayload(content, length)
         end
     end
     if     length     ~= 0 then
-        print("Content shorter than expected!")
+        error("Content shorter than expected!")
     elseif content:len() ~= 0 then
-        print("Content longer than expected!<"..content..">")
+        error("Content longer than expected!<"..content..">")
     end
     return table.concat(data)
 end
@@ -93,9 +93,9 @@ function pduString:decode8bitPayload(content, length)
         length = length - 1
     end
     if     length        > 0 then
-        print("Content shorter than expected!")
+        error("Content shorter than expected!")
     elseif content:len() > 0 then
-        print("Content longer than expected!<"..content..">")
+        error("Content longer than expected!<"..content..">")
     end
     return table.concat(data)
 end
@@ -122,9 +122,9 @@ function pduString:decode16bitPayload(content, length)
         length = length - 2
     end
     if     length        ~= 0 then
-        print("Content shorter than expected!<"..length..">")
+        error("Content shorter than expected!<"..length..">")
     elseif content:len() ~= 0 then
-        print("Content longer than expected!<"..content..">")
+        error("Content longer than expected!<"..content..">")
     end
     return table.concat(data)
 end
