@@ -46,16 +46,16 @@ function pduString:decOctets(val)
     return table.concat(response)
 end
 
-function pduString:decodePayload(content, decoding, length)
-    decodingBits = bit.band(decoding, 12)
-    if     decodingBits == 0  then return self:decode7bitPayload(content, length)
-    elseif decodingBits == 4  then return self:decode8bitPayload(content, length)
-    elseif decodingBits == 8  then return self:decode16bitPayload(content,length)
-    elseif decodingBits == 12 then error("Invalid alphabet size!") end
+function pduString:decodePayload(content, dcs, length)
+    dcsBits = bit.band(dcs, 12)
+    if     dcsBits == 0  then return self:decode7bitPayload(content, length)
+    elseif dcsBits == 4  then return self:decode8bitPayload(content, length)
+    elseif dcsBits == 8  then return self:decode16bitPayload(content,length)
+    elseif dcsBits == 12 then error("Invalid alphabet size!") end
 end
 
 function pduString:decode7bitPayload(content, length)
-    local decodeTable7bit = {[0]="@",[1]="£",[2]="$",[3]="¥",[4]="è",[5]="é",[6]="ù",[7]="ì",[8]="ò",[9]="Ç",[10]=" ",[11]="Ø",[12]="ø",[13]=" ",[14]="Å",[15]="å",[16]="Δ",[17]="_",[18]="Φ",[19]="Γ",[20]="Λ",[21]="Ω",[22]="Π",[23]="Ψ",[24]="Σ",[25]="Θ",[26]="Ξ",[27]="€",[28]="Æ",[29]="æ",[30]="ß",[31]="É",[32]=" ",[33]="!",[34]="\"",[35]="#",[36]="¤",[37]="%",[38]="&",[39]="'",[40]="(",[41]=")",[42]="*",[43]="+",[44]=",",[45]="-",[46]=".",[47]="/",[48]="0",[49]="1",[50]="2",[51]="3",[52]="4",[53]="5",[54]="6",[55]="7",[56]="8",[57]="9",[58]=":",[59]=";",[60]="<",[61]="=",[62]=">",[63]="?",[64]="¡",[65]="A",[66]="B",[67]="C",[68]="D",[69]="E",[70]="F",[71]="G",[72]="H",[73]="I",[74]="J",[75]="K",[76]="L",[77]="M",[78]="N",[79]="O",[80]="P",[81]="Q",[82]="R",[83]="S",[84]="T",[85]="U",[86]="V",[87]="W",[88]="X",[89]="Y",[90]="Z",[91]="Ä",[92]="Ö",[93]="Ñ",[94]="Ü",[95]="§",[96]="¿",[97]="a",[98]="b",[99]="c",[100]="d",[101]="e",[102]="f",[103]="g",[104]="h",[105]="i",[106]="j",[107]="k",[108]="l",[109]="m",[110]="n",[111]="o",[112]="p",[113]="q",[114]="r",[115]="s",[116]="t",[117]="u",[118]="v",[119]="w",[120]="x",[121]="y",[122]="z",[123]="ä",[124]="ö",[125]="ñ",[126]="ü",[127]="à"}
+    local decodeTable7bit = {[0]="@",[1]="£",[2]="$",[3]="¥",[4]="è",[5]="é",[6]="ù",[7]="ì",[8]="ò",[9]="Ç",[10]="\n",[11]="Ø",[12]="ø",[13]="\r",[14]="Å",[15]="å",[16]="Δ",[17]="_",[18]="Φ",[19]="Γ",[20]="Λ",[21]="Ω",[22]="Π",[23]="Ψ",[24]="Σ",[25]="Θ",[26]="Ξ",[27]="€",[28]="Æ",[29]="æ",[30]="ß",[31]="É",[32]=" ",[33]="!",[34]="\"",[35]="#",[36]="¤",[37]="%",[38]="&",[39]="'",[40]="(",[41]=")",[42]="*",[43]="+",[44]=",",[45]="-",[46]=".",[47]="/",[48]="0",[49]="1",[50]="2",[51]="3",[52]="4",[53]="5",[54]="6",[55]="7",[56]="8",[57]="9",[58]=":",[59]=";",[60]="<",[61]="=",[62]=">",[63]="?",[64]="¡",[65]="A",[66]="B",[67]="C",[68]="D",[69]="E",[70]="F",[71]="G",[72]="H",[73]="I",[74]="J",[75]="K",[76]="L",[77]="M",[78]="N",[79]="O",[80]="P",[81]="Q",[82]="R",[83]="S",[84]="T",[85]="U",[86]="V",[87]="W",[88]="X",[89]="Y",[90]="Z",[91]="Ä",[92]="Ö",[93]="Ñ",[94]="Ü",[95]="§",[96]="¿",[97]="a",[98]="b",[99]="c",[100]="d",[101]="e",[102]="f",[103]="g",[104]="h",[105]="i",[106]="j",[107]="k",[108]="l",[109]="m",[110]="n",[111]="o",[112]="p",[113]="q",[114]="r",[115]="s",[116]="t",[117]="u",[118]="v",[119]="w",[120]="x",[121]="y",[122]="z",[123]="ä",[124]="ö",[125]="ñ",[126]="ü",[127]="à"}
 
     local data = {}
     local prevoctet = 0
@@ -77,9 +77,9 @@ function pduString:decode7bitPayload(content, length)
         end
     end
     if     length     ~= 0 then
-        print("Content shorter than expected!")
+        error("Content shorter than expected!")
     elseif content:len() ~= 0 then
-        print("Content longer than expected!<"..content..">")
+        error("Content longer than expected!<"..content..">")
     end
     return table.concat(data)
 end
@@ -93,9 +93,9 @@ function pduString:decode8bitPayload(content, length)
         length = length - 1
     end
     if     length        > 0 then
-        print("Content shorter than expected!")
+        error("Content shorter than expected!")
     elseif content:len() > 0 then
-        print("Content longer than expected!<"..content..">")
+        error("Content longer than expected!<"..content..">")
     end
     return table.concat(data)
 end
@@ -112,7 +112,7 @@ function pduString:decode16bitPayload(content, length)
         if val < 0x80 then       -- 7bit
             data[#data+1] = string.char(val)    -- 0b0XXXXXXX
         elseif val < 0x800 then  -- 11bit
-            data[#data+1] = string.char(0xC0 + bit.band(bit.lshift(val,2), 0x1F))   -- 0b110XXXYY
+            data[#data+1] = string.char(0xC0 + bit.band(bit.rshift(val,6), 0x1F))   -- 0b110XXXYY
             data[#data+1] = string.char(0x80 + bit.band(val, 0x3F))                 -- 0b10YYYYYY
         elseif val < 0x10000 then -- 16bit
             data[#data+1] = string.char(0xE0 + bit.band(bit.rshift(val,12), 0x1F))  -- 0b1110XXXX
@@ -122,9 +122,9 @@ function pduString:decode16bitPayload(content, length)
         length = length - 2
     end
     if     length        ~= 0 then
-        print("Content shorter than expected!<"..length..">")
+        error("Content shorter than expected!<"..length..">")
     elseif content:len() ~= 0 then
-        print("Content longer than expected!<"..content..">")
+        error("Content longer than expected!<"..content..">")
     end
     return table.concat(data)
 end
@@ -143,13 +143,13 @@ function pduString:decodeTXmsg(content, response)
         end
     end
     response.protocol,    content = self:decodeOctet(content)
-    response.decoding,    content = self:decodeOctet(content)
+    response.dcs,    content = self:decodeOctet(content)
     if bit.band(response.type, 0x18) ~= 0 then
         response.validity,    content = self:decodeOctet(content)
     end
     response.msg.len,     content = self:decodeOctet(content)
     response.msg.content          = self:decodePayload(content,
-                                                       response.decoding,
+                                                       response.dcs,
                                                        response.msg.len)
 
     return response
@@ -167,11 +167,11 @@ function pduString:decodeRXmsg(content, response)
         end
     end
     response.protocol,   content = self:decodeOctet(content)
-    response.decoding,   content = self:decodeOctet(content)
+    response.dcs,        content = self:decodeOctet(content)
     response.timestamp,  content = self:decodeDecOctets(content, 7)
     response.msg.len,    content = self:decodeOctet(content)
     response.msg.content         = self:decodePayload(content,
-                                                      response.decoding,
+                                                      response.dcs,
                                                       response.msg.len)
 
     return response
@@ -179,7 +179,7 @@ end
 
 function pduString:decodePDU()
     local content = self.str
-    local response = {smsc={}, msg = {}}
+    local response = {smsc={}, msg = { multipart = false}}
     response.smsc.len, content = self:decodeOctet(content)
     if response.smsc.len > 0 then
         local smscNumLen = response.smsc.len - 1
