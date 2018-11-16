@@ -20,7 +20,6 @@ pduString = smsObj:encode()
 ```
 
 
-<a name="SMSobjects"/>
 ### SMS Objects
 SMS objects for RX and TX are basically the same deal, only difference is the "recipient" and "sender" subtables. 
 If required, one can add an "smsc" subtable with a "num" value for the SMS Center number.
